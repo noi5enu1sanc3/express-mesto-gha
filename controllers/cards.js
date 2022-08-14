@@ -29,6 +29,7 @@ const likeCard = (req, res) => {
       runValidators: true,
     },
   )
+    .populate('likes')
     .then((card) => res.send({ data: card }))
     .catch((err) => res.status(500).send({ message: `${err.message}` }));
 };
@@ -42,6 +43,7 @@ const dislikeCard = (req, res) => {
       runValidators: true,
     },
   )
+    .populate('likes')
     .then((card) => res.send({ data: card }))
     .catch((err) => res.status(500).send({ message: `${err.message}` }));
 };

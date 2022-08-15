@@ -33,10 +33,9 @@ const updateUserProfile = (req, res, next) => {
     runValidators: true,
   }).then((user) => (!user._id ? next(new UserNotFoundError()) : res.send({ data: user })))
     .catch((err) => {
-      if (err instanceof mongoose.Error.ValidationError) {
+      if (err instanceof mongoose.Error.ValidationError
+        || err instanceof mongoose.Error.CastError) {
         next(new ValidationError(`Validation error: ${err.message}`));
-      } else if (err instanceof mongoose.Error.CastError) {
-        next(new UserNotFoundError());
       } else {
         next(err);
       }

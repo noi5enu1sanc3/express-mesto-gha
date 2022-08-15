@@ -1,26 +1,31 @@
+const mongoose = require('mongoose');
 const Card = require('../models/card');
+const CardNotFoundError = require('../helpers/errors/CardNotFoundError');
+const ValidationError = require('../helpers/errors/ValidationError');
 
-const getCards = (req, res) => {
+const getCards = (req, res, next) => {
   Card.find({})
     .populate('owner')
     .then((cards) => res.send({ data: cards }))
-    .catch(() => res.status(500).send({ message: 'Error while getting cards' }));
+    .catch((err) => next(err));
 };
 
-const createCard = (req, res) => {
+const createCard = (req, res, next) => {
   const { name, link } = req.body;
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.send({ data: card }))
-    .catch((err) => res.status(500).send({ message: `${err.message}` }));
+    .catch((err) => (err instanceof mongoose.Error.ValidationError
+      ? next(new ValidationError(`Validation error: ${err.message}`))
+      : next(err)));
 };
 
-const deleteCard = (req, res) => {
+const deleteCard = (req, res, next) => {
   Card.findByIdAndRemove(req.params.cardId)
-    .then((card) => res.send({ data: card }))
-    .catch((err) => res.status(500).send({ message: `${err.message}` }));
+    .then((card) => (!card._id ? next(new CardNotFoundError()) : res.send({ data: card })))
+    .catch((err) => next(err));
 };
 
-const likeCard = (req, res) => {
+const likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
@@ -30,11 +35,19 @@ const likeCard = (req, res) => {
     },
   )
     .populate('likes')
-    .then((card) => res.send({ data: card }))
-    .catch((err) => res.status(500).send({ message: `${err.message}` }));
+    .then((card) => (!card._id ? next(new CardNotFoundError()) : res.send({ data: card })))
+    .catch((err) => {
+      if (err instanceof mongoose.Error.ValidationError) {
+        next(new ValidationError(`Validation error: ${err.message}`));
+      } else if (err instanceof mongoose.Error.CastError) {
+        next(new CardNotFoundError());
+      } else {
+        next(err);
+      }
+    });
 };
 
-const dislikeCard = (req, res) => {
+const dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
@@ -44,8 +57,16 @@ const dislikeCard = (req, res) => {
     },
   )
     .populate('likes')
-    .then((card) => res.send({ data: card }))
-    .catch((err) => res.status(500).send({ message: `${err.message}` }));
+    .then((card) => (!card._id ? next(new CardNotFoundError()) : res.send({ data: card })))
+    .catch((err) => {
+      if (err instanceof mongoose.Error.ValidationError) {
+        next(new ValidationError(`Validation error: ${err.message}`));
+      } else if (err instanceof mongoose.Error.CastError) {
+        next(new CardNotFoundError());
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports = {

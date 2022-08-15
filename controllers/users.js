@@ -13,7 +13,7 @@ const findUserById = (req, res, next) => {
   User.findById(req.params.userId)
     .then((user) => (!user ? next(new UserNotFoundError()) : res.send({ data: user })))
     .catch((err) => (err instanceof mongoose.Error.CastError
-      ? next(new UserNotFoundError())
+      ? next(new ValidationError())
       : next(err)));
 };
 

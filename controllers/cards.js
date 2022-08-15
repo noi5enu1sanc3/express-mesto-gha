@@ -37,10 +37,10 @@ const likeCard = (req, res, next) => {
     .populate('likes')
     .then((card) => (!card._id ? next(new CardNotFoundError()) : res.send({ data: card })))
     .catch((err) => {
-      if (err instanceof mongoose.Error.ValidationError) {
+      if (
+        err instanceof mongoose.Error.ValidationError
+        || err instanceof mongoose.Error.CastError) {
         next(new ValidationError(`Validation error: ${err.message}`));
-      } else if (err instanceof mongoose.Error.CastError) {
-        next(new CardNotFoundError());
       } else {
         next(err);
       }
@@ -59,10 +59,10 @@ const dislikeCard = (req, res, next) => {
     .populate('likes')
     .then((card) => (!card._id ? next(new CardNotFoundError()) : res.send({ data: card })))
     .catch((err) => {
-      if (err instanceof mongoose.Error.ValidationError) {
+      if (
+        err instanceof mongoose.Error.ValidationError
+        || err instanceof mongoose.Error.CastError) {
         next(new ValidationError(`Validation error: ${err.message}`));
-      } else if (err instanceof mongoose.Error.CastError) {
-        next(new CardNotFoundError());
       } else {
         next(err);
       }

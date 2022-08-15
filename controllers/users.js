@@ -31,7 +31,7 @@ const updateUserProfile = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { name, about }, {
     new: true,
     runValidators: true,
-  }).then((user) => (!user._id ? next(new UserNotFoundError()) : res.send({ data: user })))
+  }).then((user) => (!user ? next(new UserNotFoundError()) : res.send({ data: user })))
     .catch((err) => {
       if (err instanceof mongoose.Error.ValidationError
         || err instanceof mongoose.Error.CastError) {
@@ -47,7 +47,7 @@ const updateUserAvatar = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { avatar }, {
     new: true,
     runValidators: true,
-  }).then((user) => (!user._id ? next(new UserNotFoundError()) : res.send({ data: user })))
+  }).then((user) => (!user ? next(new UserNotFoundError()) : res.send({ data: user })))
     .catch((err) => {
       if (err instanceof mongoose.Error.ValidationError
         || err instanceof mongoose.Error.CastError) {

@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { errorHandler } = require('./middlewares/errorHandler');
+const PageNotFoundError = require('./helpers/errors/PageNotFoundError');
 
 const { PORT = 3000 } = process.env;
 
@@ -23,6 +24,8 @@ app.use(mockAuth);
 
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
+
+app.use((req, res, next) => next(new PageNotFoundError()));
 
 app.use(errorHandler);
 

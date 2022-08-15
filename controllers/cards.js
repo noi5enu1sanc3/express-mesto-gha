@@ -35,7 +35,7 @@ const likeCard = (req, res, next) => {
     },
   )
     .populate('likes')
-    .then((card) => (!card._id ? next(new CardNotFoundError()) : res.send({ data: card })))
+    .then((card) => (!card ? next(new CardNotFoundError()) : res.send({ data: card })))
     .catch((err) => {
       if (
         err instanceof mongoose.Error.ValidationError
@@ -57,7 +57,7 @@ const dislikeCard = (req, res, next) => {
     },
   )
     .populate('likes')
-    .then((card) => (!card._id ? next(new CardNotFoundError()) : res.send({ data: card })))
+    .then((card) => (!card ? next(new CardNotFoundError()) : res.send({ data: card })))
     .catch((err) => {
       if (
         err instanceof mongoose.Error.ValidationError

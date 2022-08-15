@@ -21,8 +21,10 @@ const createCard = (req, res, next) => {
 
 const deleteCard = (req, res, next) => {
   Card.findByIdAndRemove(req.params.cardId)
-    .then((card) => (!card._id ? next(new CardNotFoundError()) : res.send({ data: card })))
-    .catch((err) => next(err));
+    .then((card) => (!card ? next(new CardNotFoundError()) : res.send({ data: card })))
+    .catch((err) => (err instanceof mongoose.Error.CastError
+      ? next(new ValidationError(`Validation error: ${err.message}`))
+      : next(err)));
 };
 
 const likeCard = (req, res, next) => {

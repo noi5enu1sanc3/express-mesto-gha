@@ -7,8 +7,6 @@ const { errorHandler } = require('./middlewares/errorHandler');
 
 const { PORT = 3000 } = process.env;
 
-mongoose.connect('mongodb://localhost:27017/mestodb');
-
 const app = express();
 
 app.use(bodyParser.json());
@@ -25,9 +23,21 @@ app.use(mockAuth);
 
 app.use(router);
 
-app.use(errorHandler);
+const main = async (next) => {
+  try {
+    await mongoose.connect('mongodb://localhost:27017/mestodb');
+  } catch (err) {
+    next(err);
+  }
+  try {
+    await app.listen(PORT);
+    // eslint-disable-next-line no-console
+    console.log(`App listening on port ${PORT}`);
+  } catch (err) {
+    next(err);
+  }
+};
 
-app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
-  console.log(`App listening on port ${PORT}`);
-});
+main();
+
+app.use(errorHandler);

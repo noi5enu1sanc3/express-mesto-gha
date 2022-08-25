@@ -37,7 +37,7 @@ const deleteCard = async (req, res, next) => {
       res.send({ data: card });
     }
   } catch (err) {
-    if (err instanceof mongoose.Error.ValidationError) {
+    if (err instanceof mongoose.Error.ValidationError || mongoose.Error.CastError) {
       next(new ValidationError(`Validation error: ${err.message}`));
     } else {
       next(err);

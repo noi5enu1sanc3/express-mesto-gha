@@ -1,7 +1,26 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const UserNotFoundError = require('../helpers/errors/UserNotFoundError');
 const ValidationError = require('../helpers/errors/ValidationError');
+const UnauthorizedError = require('../helpers/errors/UnauthorizedError');
 const User = require('../models/user');
+
+const login = async (req, res, next) => {
+  const { email, password } = req.body;
+  try {
+    const user = await User.findUserByCredentials(email, password);
+    const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' }); // TODO env?
+    res
+      .cookie('jwt', token, {
+        maxAge: 3600 * 24 * 7,
+        httpOnly: true,
+      })
+      .end();
+  } catch (err) {
+    next(new UnauthorizedError());
+  }
+};
 
 const getUsers = async (req, res, next) => {
   try {
@@ -30,9 +49,14 @@ const findUserById = async (req, res, next) => {
 };
 
 const createUser = async (req, res, next) => {
-  const { name, about, avatar } = req.body;
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
   try {
-    const user = await User.create({ name, about, avatar });
+    const hash = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      name, about, avatar, email, password: hash,
+    });
     res.send({ data: user });
   } catch (err) {
     if (err instanceof mongoose.Error.ValidationError) {
@@ -88,5 +112,5 @@ const updateUserAvatar = async (req, res, next) => {
 };
 
 module.exports = {
-  getUsers, findUserById, createUser, updateUserProfile, updateUserAvatar,
+  login, getUsers, findUserById, createUser, updateUserProfile, updateUserAvatar,
 };

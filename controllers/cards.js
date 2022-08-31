@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Card = require('../models/card');
 const CardNotFoundError = require('../helpers/errors/CardNotFoundError');
 const ValidationError = require('../helpers/errors/ValidationError');
+const ForbiddenError = require('../helpers/errors/ForbiddenError');
 
 const getCards = async (req, res, next) => {
   try {
@@ -16,7 +17,7 @@ const getCards = async (req, res, next) => {
 const createCard = async (req, res, next) => {
   const { name, link } = req.body;
   try {
-    const card = await Card.create({ name, link, owner: req.user._id });
+    const card = await (await Card.create({ name, link, owner: req.user._id })).populate('owner');
     res.send({ data: card });
   } catch (err) {
     if (err instanceof mongoose.Error.ValidationError) {
@@ -28,19 +29,26 @@ const createCard = async (req, res, next) => {
 };
 
 const deleteCard = async (req, res, next) => {
-  try {
-    const card = await Card.findByIdAndRemove(req.params.cardId);
+  const requestedCard = await Card.findById(req.params.cardId)
+    .orFail(() => next(CardNotFoundError()));
+  console.log(req.user._id, requestedCard.owner._id.toString());
+  if (req.user._id !== requestedCard.owner._id.toString()) {
+    next(new ForbiddenError('Only allowed to delete your own cards'));
+  } else {
+    try {
+      const card = await Card.findByIdAndRemove(req.params.cardId);
 
-    if (!card) {
-      next(new CardNotFoundError());
-    } else {
-      res.send({ data: card });
-    }
-  } catch (err) {
-    if (err instanceof mongoose.Error.ValidationError || mongoose.Error.CastError) {
-      next(new ValidationError(`Validation error: ${err.message}`));
-    } else {
-      next(err);
+      if (!card) {
+        next(new CardNotFoundError());
+      } else {
+        res.send({ data: card });
+      }
+    } catch (err) {
+      if (err instanceof mongoose.Error.ValidationError || mongoose.Error.CastError) {
+        next(new ValidationError(`Validation error: ${err.message}`));
+      } else {
+        next(err);
+      }
     }
   }
 };

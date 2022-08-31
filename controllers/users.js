@@ -11,6 +11,8 @@ const login = async (req, res, next) => {
   try {
     const user = await User.findUserByCredentials(email, password);
     const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' }); // TODO env?
+    console.log(token);
+    //res.send(token);
     res
       .cookie('jwt', token, {
         maxAge: 3600 * 24 * 7,
@@ -18,7 +20,17 @@ const login = async (req, res, next) => {
       })
       .end();
   } catch (err) {
-    next(new UnauthorizedError());
+    next(new UnauthorizedError(err.message));
+  }
+};
+
+const getUserInfo = async (req, res, next) => {
+  try {
+    console.log(req.user, 'qqq');
+    const user = await User.findById(req.user._id).orFail(() => next(new UserNotFoundError()));
+    res.send({ data: user });
+  } catch (err) {
+    next(err);
   }
 };
 
@@ -112,5 +124,5 @@ const updateUserAvatar = async (req, res, next) => {
 };
 
 module.exports = {
-  login, getUsers, findUserById, createUser, updateUserProfile, updateUserAvatar,
+  login, getUserInfo, getUsers, findUserById, createUser, updateUserProfile, updateUserAvatar,
 };

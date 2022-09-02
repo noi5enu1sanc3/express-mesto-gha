@@ -40,8 +40,8 @@ const validateUpdateUserAvatar = celebrate({
 
 const validateCreateCard = celebrate({
   body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    link: Joi.string().pattern(linkRegex),
+    name: Joi.string().required().min(2).max(30),
+    link: Joi.string().required().pattern(linkRegex),
   }),
 });
 
@@ -50,7 +50,6 @@ const validateGetCardById = celebrate({
     cardId: Joi.objectId(),
   }),
 });
-
 module.exports = {
   validateLogin,
   validateGetUserById,

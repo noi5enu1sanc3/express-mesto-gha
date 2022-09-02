@@ -31,7 +31,7 @@ const createCard = async (req, res, next) => {
 
 const deleteCard = async (req, res, next) => {
   const requestedCard = await Card.findById(req.params.cardId)
-    .orFail(() => next(NotFoundError(cardNotFoundMessage)));
+    .orFail(() => next(new NotFoundError(cardNotFoundMessage)));
   if (req.user._id !== requestedCard.owner._id.toString()) {
     next(new ForbiddenError(forbiddenErrorMessage));
   } else {

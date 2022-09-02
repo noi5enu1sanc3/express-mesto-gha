@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
 const Card = require('../models/card');
-const CardNotFoundError = require('../helpers/errors/CardNotFoundError');
+const NotFoundError = require('../helpers/errors/NotFoundError');
 const ValidationError = require('../helpers/errors/ValidationError');
 const ForbiddenError = require('../helpers/errors/ForbiddenError');
+const { forbiddenErrorMessage, cardNotFoundMessage, validationErrorMessage } = require('../helpers/constants');
 
 const getCards = async (req, res, next) => {
   try {
@@ -21,7 +22,7 @@ const createCard = async (req, res, next) => {
     res.send({ data: card });
   } catch (err) {
     if (err instanceof mongoose.Error.ValidationError) {
-      next(new ValidationError(`Validation error: ${err.message}`));
+      next(new ValidationError(`${validationErrorMessage}: ${err.message}`));
     } else {
       next(err);
     }
@@ -30,22 +31,21 @@ const createCard = async (req, res, next) => {
 
 const deleteCard = async (req, res, next) => {
   const requestedCard = await Card.findById(req.params.cardId)
-    .orFail(() => next(CardNotFoundError()));
-  console.log(req.user._id, requestedCard.owner._id.toString());
+    .orFail(() => next(NotFoundError(cardNotFoundMessage)));
   if (req.user._id !== requestedCard.owner._id.toString()) {
-    next(new ForbiddenError('Only allowed to delete your own cards'));
+    next(new ForbiddenError(forbiddenErrorMessage));
   } else {
     try {
       const card = await Card.findByIdAndRemove(req.params.cardId);
 
       if (!card) {
-        next(new CardNotFoundError());
+        next(new NotFoundError(cardNotFoundMessage));
       } else {
         res.send({ data: card });
       }
     } catch (err) {
       if (err instanceof mongoose.Error.ValidationError || mongoose.Error.CastError) {
-        next(new ValidationError(`Validation error: ${err.message}`));
+        next(new ValidationError(`${validationErrorMessage}: ${err.message}`));
       } else {
         next(err);
       }
@@ -65,7 +65,7 @@ const likeCard = async (req, res, next) => {
     )
       .populate('likes');
     if (!card) {
-      next(new CardNotFoundError());
+      next(new NotFoundError(cardNotFoundMessage));
     } else {
       res.send({ data: card });
     }
@@ -73,7 +73,7 @@ const likeCard = async (req, res, next) => {
     if (
       err instanceof mongoose.Error.ValidationError
       || err instanceof mongoose.Error.CastError) {
-      next(new ValidationError(`Validation error: ${err.message}`));
+      next(new ValidationError(`${validationErrorMessage}: ${err.message}`));
     } else {
       next(err);
     }
@@ -92,7 +92,7 @@ const dislikeCard = async (req, res, next) => {
     )
       .populate('likes');
     if (!card) {
-      next(new CardNotFoundError());
+      next(new NotFoundError(cardNotFoundMessage));
     } else {
       res.send({ data: card });
     }
@@ -100,7 +100,7 @@ const dislikeCard = async (req, res, next) => {
     if (
       err instanceof mongoose.Error.ValidationError
       || err instanceof mongoose.Error.CastError) {
-      next(new ValidationError(`Validation error: ${err.message}`));
+      next(new ValidationError(`${validationErrorMessage}: ${err.message}`));
     } else {
       next(err);
     }

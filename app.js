@@ -1,6 +1,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+
+const { errors } = require('celebrate');
 
 const router = require('./routes/index');
 const { errorHandler } = require('./middlewares/errorHandler');
@@ -10,6 +13,7 @@ const { PORT = 3000 } = process.env;
 const app = express();
 
 app.use(bodyParser.json());
+app.use(cookieParser());
 
 app.use(router);
 
@@ -29,5 +33,7 @@ const main = async (next) => {
 };
 
 main();
+
+app.use(errors());
 
 app.use(errorHandler);

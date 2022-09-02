@@ -1,8 +1,9 @@
-const HttpError = require('./HttpError');
+const { ERROR_CODE_UNAUTHORIZED } = require('../constants');
 
-class UnauthorizedError extends HttpError {
-  constructor() {
-    super(401); // TODO message
+class UnauthorizedError extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = ERROR_CODE_UNAUTHORIZED;
   }
 }
 

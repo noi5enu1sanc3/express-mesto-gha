@@ -1,33 +1,38 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const UserNotFoundError = require('../helpers/errors/UserNotFoundError');
+const bcrypt = require('bcryptjs');
+const User = require('../models/user');
+const NotFoundError = require('../helpers/errors/NotFoundError');
 const ValidationError = require('../helpers/errors/ValidationError');
 const UnauthorizedError = require('../helpers/errors/UnauthorizedError');
-const User = require('../models/user');
+const ConflictError = require('../helpers/errors/ConflictError');
+const {
+  userNotFoundMessage,
+  wrongEmailOrPasswordMessage,
+  validationErrorMessage,
+  userWithThisEmailAlreadyExistMessage,
+} = require('../helpers/constants');
 
 const login = async (req, res, next) => {
   const { email, password } = req.body;
   try {
     const user = await User.findUserByCredentials(email, password);
     const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' }); // TODO env?
-    console.log(token);
-    //res.send(token);
     res
       .cookie('jwt', token, {
-        maxAge: 3600 * 24 * 7,
+        maxAge: 3600000 * 24 * 7,
         httpOnly: true,
       })
-      .end();
+      .send({ data: user.toJSON() });
   } catch (err) {
-    next(new UnauthorizedError(err.message));
+    next(new UnauthorizedError(wrongEmailOrPasswordMessage));
   }
 };
 
 const getUserInfo = async (req, res, next) => {
   try {
-    console.log(req.user, 'qqq');
-    const user = await User.findById(req.user._id).orFail(() => next(new UserNotFoundError()));
+    const user = await User.findById(req.user._id)
+      .orFail(() => next(new NotFoundError(userNotFoundMessage)));
     res.send({ data: user });
   } catch (err) {
     next(err);
@@ -47,13 +52,13 @@ const findUserById = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.userId);
     if (!user) {
-      next(new UserNotFoundError());
+      next(new NotFoundError(userNotFoundMessage));
     } else {
       res.send({ data: user });
     }
   } catch (err) {
     if (err instanceof mongoose.Error.CastError) {
-      next(new ValidationError(`Validation error: ${err.message}`));
+      next(new ValidationError(`${validationErrorMessage}: ${err.message}`));
     } else {
       next(err);
     }
@@ -69,10 +74,12 @@ const createUser = async (req, res, next) => {
     const user = await User.create({
       name, about, avatar, email, password: hash,
     });
-    res.send({ data: user });
+    res.send({ data: user.toJSON() });
   } catch (err) {
     if (err instanceof mongoose.Error.ValidationError) {
-      next(new ValidationError(`Validation error: ${err.message}`));
+      next(new ValidationError(`${validationErrorMessage}: ${err.message}`));
+    } else if (err.code === 11000) {
+      next(new ConflictError(userWithThisEmailAlreadyExistMessage));
     } else {
       next(err);
     }
@@ -87,14 +94,14 @@ const updateUserProfile = async (req, res, next) => {
       runValidators: true,
     });
     if (!user) {
-      next(new UserNotFoundError());
+      next(new NotFoundError(userNotFoundMessage));
     } else {
       res.send({ data: user });
     }
   } catch (err) {
     if (err instanceof mongoose.Error.ValidationError
       || err instanceof mongoose.Error.CastError) {
-      next(new ValidationError(`Validation error: ${err.message}`));
+      next(new ValidationError(`${validationErrorMessage}: ${err.message}`));
     } else {
       next(err);
     }
@@ -109,14 +116,14 @@ const updateUserAvatar = async (req, res, next) => {
       runValidators: true,
     });
     if (!user) {
-      next(new UserNotFoundError());
+      next(new NotFoundError(userNotFoundMessage));
     } else {
       res.send({ data: user });
     }
   } catch (err) {
     if (err instanceof mongoose.Error.ValidationError
       || err instanceof mongoose.Error.CastError) {
-      next(new ValidationError(`Validation error: ${err.message}`));
+      next(new ValidationError(`${validationErrorMessage}: ${err.message}`));
     } else {
       next(err);
     }

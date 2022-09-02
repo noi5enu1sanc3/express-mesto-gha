@@ -2,7 +2,7 @@ const { ERROR_CODE_INTERNAL_SERVER_ERROR, serverErrorMessage } = require('../hel
 
 module.exports.errorHandler = (err, req, res, next) => {
   const message = err.message || serverErrorMessage;
-  const status = err.status || ERROR_CODE_INTERNAL_SERVER_ERROR;
-  res.status(status).send({ message });
+  const statusCode = err.statusCode || ERROR_CODE_INTERNAL_SERVER_ERROR;
+  res.status(statusCode).send({ message });
   next();
 };

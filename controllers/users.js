@@ -17,7 +17,7 @@ const login = async (req, res, next) => {
   const { email, password } = req.body;
   try {
     const user = await User.findUserByCredentials(email, password);
-    const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' }); // TODO env?
+    const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
     res
       .cookie('jwt', token, {
         maxAge: 3600000 * 24 * 7,

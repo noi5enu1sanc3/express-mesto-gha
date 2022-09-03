@@ -50,12 +50,9 @@ const getUsers = async (req, res, next) => {
 
 const findUserById = async (req, res, next) => {
   try {
-    const user = await User.findById(req.params.userId);
-    if (!user) {
-      next(new NotFoundError(userNotFoundMessage));
-    } else {
-      res.send({ data: user });
-    }
+    const user = await User.findById(req.params.userId)
+      .orFail(() => next(new NotFoundError(userNotFoundMessage)));
+    res.send({ data: user });
   } catch (err) {
     if (err instanceof mongoose.Error.CastError) {
       next(new ValidationError(`${validationErrorMessage}: ${err.message}`));
@@ -92,12 +89,9 @@ const updateUserProfile = async (req, res, next) => {
     const user = await User.findByIdAndUpdate(req.user._id, { name, about }, {
       new: true,
       runValidators: true,
-    });
-    if (!user) {
-      next(new NotFoundError(userNotFoundMessage));
-    } else {
-      res.send({ data: user });
-    }
+    })
+      .orFail(() => next(new NotFoundError(userNotFoundMessage)));
+    res.send({ data: user });
   } catch (err) {
     if (err instanceof mongoose.Error.ValidationError
       || err instanceof mongoose.Error.CastError) {
@@ -114,12 +108,9 @@ const updateUserAvatar = async (req, res, next) => {
     const user = await User.findByIdAndUpdate(req.user._id, { avatar }, {
       new: true,
       runValidators: true,
-    });
-    if (!user) {
-      next(new NotFoundError(userNotFoundMessage));
-    } else {
-      res.send({ data: user });
-    }
+    })
+      .orFail(() => next(new NotFoundError(userNotFoundMessage)));
+    res.send({ data: user });
   } catch (err) {
     if (err instanceof mongoose.Error.ValidationError
       || err instanceof mongoose.Error.CastError) {

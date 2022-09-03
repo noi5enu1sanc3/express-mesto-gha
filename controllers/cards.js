@@ -30,26 +30,17 @@ const createCard = async (req, res, next) => {
 };
 
 const deleteCard = async (req, res, next) => {
-  const requestedCard = await Card.findById(req.params.cardId)
-    .orFail(() => next(new NotFoundError(cardNotFoundMessage)));
-  if (req.user._id !== requestedCard.owner._id.toString()) {
-    next(new ForbiddenError(forbiddenErrorMessage));
-  } else {
-    try {
+  try {
+    const requestedCard = await Card.findById(req.params.cardId)
+      .orFail(() => next(new NotFoundError(cardNotFoundMessage)));
+    if (req.user._id !== requestedCard.owner._id.toString()) {
+      next(new ForbiddenError(forbiddenErrorMessage));
+    } else {
       const card = await Card.findByIdAndRemove(req.params.cardId);
-
-      if (!card) {
-        next(new NotFoundError(cardNotFoundMessage));
-      } else {
-        res.send({ data: card });
-      }
-    } catch (err) {
-      if (err instanceof mongoose.Error.ValidationError || mongoose.Error.CastError) {
-        next(new ValidationError(`${validationErrorMessage}: ${err.message}`));
-      } else {
-        next(err);
-      }
+      res.send({ data: card });
     }
+  } catch (err) {
+    next(err);
   }
 };
 
@@ -63,20 +54,11 @@ const likeCard = async (req, res, next) => {
         runValidators: true,
       },
     )
-      .populate('likes');
-    if (!card) {
-      next(new NotFoundError(cardNotFoundMessage));
-    } else {
-      res.send({ data: card });
-    }
+      .populate('likes')
+      .orFail(() => next(new NotFoundError(cardNotFoundMessage)));
+    res.send({ data: card });
   } catch (err) {
-    if (
-      err instanceof mongoose.Error.ValidationError
-      || err instanceof mongoose.Error.CastError) {
-      next(new ValidationError(`${validationErrorMessage}: ${err.message}`));
-    } else {
-      next(err);
-    }
+    next(err);
   }
 };
 
@@ -90,20 +72,11 @@ const dislikeCard = async (req, res, next) => {
         runValidators: true,
       },
     )
-      .populate('likes');
-    if (!card) {
-      next(new NotFoundError(cardNotFoundMessage));
-    } else {
-      res.send({ data: card });
-    }
+      .populate('likes')
+      .orFail(() => next(new NotFoundError(cardNotFoundMessage)));
+    res.send({ data: card });
   } catch (err) {
-    if (
-      err instanceof mongoose.Error.ValidationError
-      || err instanceof mongoose.Error.CastError) {
-      next(new ValidationError(`${validationErrorMessage}: ${err.message}`));
-    } else {
-      next(err);
-    }
+    next(err);
   }
 };
 

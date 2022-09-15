@@ -8,7 +8,8 @@ const { forbiddenErrorMessage, cardNotFoundMessage, validationErrorMessage } = r
 const getCards = async (req, res, next) => {
   try {
     const cards = await Card.find({})
-      .populate('owner');
+      .populate('owner')
+      .populate('likes');
     res.send({ data: cards });
   } catch (err) {
     next(err);
@@ -53,8 +54,7 @@ const likeCard = async (req, res, next) => {
         new: true,
         runValidators: true,
       },
-    )
-      .populate('likes')
+    ).populate('likes').populate('owner')
       .orFail(() => next(new NotFoundError(cardNotFoundMessage)));
     res.send({ data: card });
   } catch (err) {
@@ -71,8 +71,7 @@ const dislikeCard = async (req, res, next) => {
         new: true,
         runValidators: true,
       },
-    )
-      .populate('likes')
+    ).populate('likes').populate('owner')
       .orFail(() => next(new NotFoundError(cardNotFoundMessage)));
     res.send({ data: card });
   } catch (err) {

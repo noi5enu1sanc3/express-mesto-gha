@@ -17,12 +17,12 @@ const { PORT = 3000 } = process.env;
 
 const app = express();
 
-app.use(cors());
-// {
-// origin: ['http://localhost:3001', 'http://meremost.nomorepartiesxyz.ru'],
-// credentials: true,
-// }
-// ));
+app.use(cors(
+  {
+    origin: ['http://localhost:3001', 'http://meremost.nomorepartiesxyz.ru'],
+    credentials: true,
+  },
+));
 
 app.use(bodyParser.json());
 app.use(cookieParser());

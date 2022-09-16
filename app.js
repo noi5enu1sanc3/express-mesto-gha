@@ -19,7 +19,7 @@ const app = express();
 
 app.use(cors(
   {
-    origin: ['http://localhost:3001', 'http://meremost.nomorepartiesxyz.ru'],
+    origin: ['http://localhost:3001', 'https://localhost:3001', 'https://meremost.nomorepartiesxyz.ru', 'http://meremost.nomorepartiesxyz.ru'],
     credentials: true,
   },
 ));

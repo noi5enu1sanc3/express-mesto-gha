@@ -19,15 +19,12 @@ const { PORT = 3000 } = process.env;
 
 const app = express();
 
-// app.use(helmet());
+app.use(helmet());
 
 app.use(cors(
   {
     origin: ['http://localhost:3001', 'https://localhost:3001', 'https://meremost.nomorepartiesxyz.ru', 'http://meremost.nomorepartiesxyz.ru'],
     credentials: true,
-    allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept'],
-    exposedHeaders: ['Cache-Control', 'Content-Language', 'Content-Length', 'Content-Type', 'Expires', 'Last-Modified', 'Pragma', 'X-Set-Cookie'],
-    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
   },
 ));
 

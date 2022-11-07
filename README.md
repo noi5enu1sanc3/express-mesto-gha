@@ -1,16 +1,40 @@
-# Проект Mesto бэкенд
+# Bachend for Mesto project
 
+Stack:
+- Express.js
+- MongoDB
+- Mongoose
+- Nginx
+- error and request logging with Winston
+- validation with Joi
+
+## Run Locally
+
+Clone the project
+
+```bash
+  git clone git@github.com:noi5enu1sanc3/express-mesto-gha.git
 ```
-## Директории
 
-`/routes` — папка с файлами роутера
-`/controllers` — папка с файлами контроллеров пользователя и карточки
-`/models` — папка с файлами описания схем пользователя и карточки
+Go to the project directory
 
-Остальные директории вспомогательные, создаются при необходимости разработчиком
+```bash
+  cd express-mesto-gha
+```
 
-## Запуск проекта
+Install dependencies
 
-`npm run start` — запускает сервер
-`npm run dev` — запускает сервер с hot-reload
+```bash
+  npm install
+```
+
+Start the server
+
+```bash
+  npm run start
+```
+Start the server in dev mode with hot reload
+
+```bash
+  npm run dev
 ```

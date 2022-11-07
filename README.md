@@ -1,4 +1,4 @@
-# Bachend for Mesto project
+# Backend for Mesto project
 
 Stack:
 - Express.js
